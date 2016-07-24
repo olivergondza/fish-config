@@ -15,10 +15,8 @@ function fish_prompt --description 'Write out the prompt'
         set -g __fish_color_blue (set_color -o blue)
     end
 
-    #Set the color for the status depending on the value
-    set __fish_color_status (set_color -o green)
-    if test $stat -gt 0
-        set __fish_color_status (set_color -o red)
+    if not set -q __fish_color_status
+        set -g __fish_color_status (set_color -o red)
     end
 
     switch $USER
@@ -41,7 +39,11 @@ function fish_prompt --description 'Write out the prompt'
                 set -g __fish_prompt_cwd (set_color $fish_color_cwd)
             end
 
-            printf '[%s] %s%s@%s %s%s %s(%s)%s \f\r> ' (date "+%H:%M:%S") "$__fish_color_blue" $USER "$__fish_prompt_hostname" "$__fish_prompt_cwd" "$PWD" "$__fish_color_status" "$stat" "$__fish_prompt_normal"
+            printf '[%s] %s%s@%s %s%s ' (date "+%H:%M:%S") "$__fish_color_blue" $USER "$__fish_prompt_hostname" "$__fish_prompt_cwd" "$PWD"
+            if [ $stat -ne 0 ]
+                printf '%s%s%s ' "$__fish_color_status" "$stat" "$__fish_prompt_normal"
+            end
+            printf '\f\r$ '
 
     end
 end
