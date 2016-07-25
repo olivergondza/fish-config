@@ -39,7 +39,7 @@ function fish_prompt --description 'Write out the prompt'
                 set -g __fish_prompt_cwd (set_color $fish_color_cwd)
             end
 
-            printf '[%s] %s%s@%s %s%s ' (command date "+%H:%M:%S") "$__fish_color_blue" $USER "$__fish_prompt_hostname" "$__fish_prompt_cwd" "$PWD"
+            printf '[%s] %s%s@%s %s%s ' (command date "+%H:%M:%S") "$__fish_color_blue" $USER "$__fish_prompt_hostname" "$__fish_prompt_cwd" (prompt_pwd)
             if [ $stat -ne 0 ]
                 printf '%s%s%s ' "$__fish_color_status" "$stat" "$__fish_prompt_normal"
             end
