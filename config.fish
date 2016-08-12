@@ -1,5 +1,3 @@
-set -U BROWSER firefox
-set -U EDITOR joe
-
-source ~/.srch/completion/fish
+source ~/.srch/completion/srch.fish
 complete -c s -w srch
+set -u SHELL fish
