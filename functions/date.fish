@@ -1,3 +1,3 @@
 function date
-	command /usr/bin/date --iso-8601 $argv;
+	command date +'%Y-%m-%d %H:%M:%S'
 end
