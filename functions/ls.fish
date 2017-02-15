@@ -1,3 +1,3 @@
 function ls
-	command ls -F -N $argv;
+	command ls -F -N --color $argv;
 end

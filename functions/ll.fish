@@ -1,3 +1,3 @@
 function ll
-	command ls -lhN $argv;
+	command ls -lhN --color $argv;
 end
