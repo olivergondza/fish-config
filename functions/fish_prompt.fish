@@ -15,17 +15,23 @@ function fish_prompt --description 'Write out the prompt'
         set -g __fish_color_blue (set_color brblue)
     end
 
-    if not set -q __fish_color_status
-        set -g __fish_color_status (set_color -o red)
-    end
-
     if not set -q __fish_prompt_cwd
         set -g __fish_prompt_cwd (set_color $fish_color_cwd)
     end
 
-    printf '%s%s@%s %s%s ' "$__fish_color_blue" $USER "$__fish_prompt_hostname" "$__fish_prompt_cwd" (prompt_pwd)
+    if not set -q __fish_prompt_cwd_failed
+        set -g __fish_prompt_cwd_failed (set_color red)
+    end
+
+    if not set -q __fish_color_status
+        set -g __fish_color_status (set_color -o red)
+    end
+
+    printf '%s%s@%s %s%s' "$__fish_color_blue" $USER "$__fish_prompt_hostname"
     if [ $stat -ne 0 ]
-        echo -n "$__fish_color_status""$stat"' '
+        echo -n "$__fish_prompt_cwd_failed"(prompt_pwd)" $__fish_color_status$stat "
+    else
+        echo -n "$__fish_prompt_cwd"(prompt_pwd)' '
     end
     echo -n "$__fish_prompt_normal"'$ '
 end
