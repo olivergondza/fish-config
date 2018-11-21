@@ -2,6 +2,19 @@ function fish_prompt --description 'Write out the prompt'
     #Save the return status of the previous command
     set stat $status
 
+    # Notify if command took too long
+    if test $CMD_DURATION
+        set secs (math "$CMD_DURATION / 1000")
+        if test $secs -gt 60
+            if test $stat -eq 0
+                set urg "normal"
+            else
+                set urg "critical"
+            end
+            notify-send --urgency=$urg "Done: $history[1]" "Returned $stat, took $secs seconds"
+        end
+    end
+
     # Just calculate these once, to save a few cycles when displaying the prompt
     if not set -q __fish_prompt_hostname
         set -g __fish_prompt_hostname (hostname|cut -d . -f 1)
