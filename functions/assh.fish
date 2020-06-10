@@ -1,4 +1,4 @@
-function issh --description "Make SSH connection to temorary server without worrying about the fingerprints"
-  ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -o Loglevel=error $argv
+function assh --description "Make SSH connection to temporary server without worrying about the fingerprints"
+  kitty +kitten ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -o Loglevel=error $argv
 end
-complete -c issh -w ssh
+complete -c assh -w ssh
