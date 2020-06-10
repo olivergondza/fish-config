@@ -21,37 +21,31 @@ function fish_prompt --description 'Write out the prompt'
     end
 
     # Just calculate these once, to save a few cycles when displaying the prompt
-    if not set -q __fish_prompt_hostname
-        set -g __fish_prompt_hostname (hostname|cut -d . -f 1)
-    end
-
     if not set -q __fish_prompt_normal
         set -g __fish_prompt_normal (set_color normal)
     end
-
     if not set -q __fish_color_blue
         set -g __fish_color_blue (set_color brblue)
     end
-
     if not set -q __fish_prompt_cwd
         set -g __fish_prompt_cwd (set_color $fish_color_cwd)
     end
-
     if not set -q __fish_prompt_cwd_failed
         set -g __fish_prompt_cwd_failed (set_color red)
     end
-
     if not set -q __fish_color_status
         set -g __fish_color_status (set_color -o red)
     end
 
-    printf '%s%s@%s %s%s' "$__fish_color_blue" $USER "$__fish_prompt_hostname"
+    printf '%s%s %s%s' "$__fish_color_blue" $USER
     if [ $stat -ne 0 ]
-        echo -n "$__fish_prompt_cwd_failed"(prompt_pwd)" $__fish_color_status$stat "
+        echo -n "$__fish_prompt_cwd_failed"(prompt_pwd)" $__fish_color_status$stat$__fish_prompt_normal"
     else
-        echo -n "$__fish_prompt_cwd"(prompt_pwd)' '
+        echo -n "$__fish_prompt_cwd"(prompt_pwd)"$__fish_prompt_normal"
     end
-    echo -n "$__fish_prompt_normal"'$ '
+    set -g __fish_git_prompt_show_informative_status true
+    set -g __fish_git_prompt_char_stateseparator ' '
+    echo -n (fish_git_prompt&&echo ' '||echo ' $ ')
 end
 
 function _is_background_completion --description "Determine whether a command is worth reporting its completion"
