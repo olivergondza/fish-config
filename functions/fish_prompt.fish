@@ -1,4 +1,14 @@
 function fish_prompt --description 'Write out the prompt'
+    if nmcli connection show "Brno (BRQ)" | grep "GENERAL.STATE.*activated" > /dev/null
+        set VPN "VPN "
+    else
+        set VPN ""
+    end
+
+    printf '%s> ' $VPN
+end
+
+function actual_fish_prompt --on-event fish_prompt --description 'Write out the prompt'
     #Save the return status of the previous command
     set stat $status
 
@@ -45,7 +55,7 @@ function fish_prompt --description 'Write out the prompt'
     end
     set -g __fish_git_prompt_show_informative_status true
     set -g __fish_git_prompt_char_stateseparator ' '
-    echo -n (fish_git_prompt&&echo ' '||echo ' $ ')
+    echo (fish_git_prompt&&echo ' '||echo ' $ ')
 end
 
 function _is_background_completion --description "Determine whether a command is worth reporting its completion"
