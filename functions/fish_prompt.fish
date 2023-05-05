@@ -19,10 +19,12 @@ function actual_fish_prompt --on-event fish_prompt --description 'Write out the 
         if test $secs -gt 60; and _is_background_completion
             if test $stat -eq 0
                 set urg "normal"
+                set ball "🟢 "
             else
                 set urg "critical"
+                set ball "🔴 "
             end
-            notify-send --urgency=$urg "Done: $last_command" "Returned $stat, took $secs seconds"
+            notify-send --urgency=$urg "$ball $last_command" "Returned $stat, took $secs seconds"
             # It appears the prompt gets regenerated when urxvt windows resized
             # causing the notification to be resent repeatedly. Erase the CMD_DURATION
             # to avoid that
@@ -59,9 +61,8 @@ function actual_fish_prompt --on-event fish_prompt --description 'Write out the 
 end
 
 function _is_background_completion --description "Determine whether a command is worth reporting its completion"
-    # https://superuser.com/a/533254/467870
-    set current_window_id (xprop -root 32c '\t$0' _NET_ACTIVE_WINDOW | cut -f 2)
-    if [ $current_window_id -eq $WINDOWID ]
+    set current_desktop_id (xprop -root -notype _NET_CURRENT_DESKTOP | awk '{ print $3 }')
+    if [ $current_desktop_id -eq 0 ]
         return 1
     else
         return 0
