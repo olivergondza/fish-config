@@ -1,14 +1,21 @@
 function watch --description "Better watch"
-  set last ""
+  set last_out ""
+  set last_status ""
   while :;
-    #set current "$(eval $argv)" https://github.com/fish-shell/fish-shell/commit/5999d660c00546dea9b00b97722eb11ad9bb4ff7
-    set current (eval $argv | string collect)
-    if [ "$current" != "$last" ]
-      echo -n (set_color red)
-      command date +':: %Y-%m-%d %H:%M:%S ::'
+    set cmd_out (eval $argv 2>&1 | string collect)
+    set cmd_status $pipestatus[1]
+    if [ "$cmd_out" != "$last_out" ]; or [ "$last_status" != "$cmd_status" ]
+      set color red
+      if [ "$cmd_status" -eq 0 ];
+        set color green
+      end
+      echo -n (set_color $color)
+      command date +':: %Y-%m-%d %H:%M:%S (exit '$cmd_status')'
       echo -n (set_color normal)
-      echo -e "$current"
-      set last $current
+      echo -e "$cmd_out"
+
+      set last_out $cmd_out
+      set last_status $cmd_status
     end
     sleep 1
   end
