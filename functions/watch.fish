@@ -2,7 +2,8 @@ function watch --description "Better watch"
   set last_out ""
   set last_status ""
   while :;
-    set cmd_out (eval $argv 2>&1 | string collect)
+    # https://github.com/fish-shell/fish-shell/issues/3708#issuecomment-271035693
+    set cmd_out (eval (string escape -- $argv) 2>&1 | string collect)
     set cmd_status $pipestatus[1]
     if [ "$cmd_out" != "$last_out" ]; or [ "$last_status" != "$cmd_status" ]
       set color red
