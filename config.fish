@@ -9,5 +9,6 @@ set -x GOPATH /home/ogondza/.go
 # Force newer than whichever is default ATM
 set -x IDEA_JDK /usr/lib/jvm/java-17-openjdk/
 
-# Generate latest origin-client completions
+# Generate dynamic completions
 oc completion fish > ~/.config/fish/completions/oc.fish
+kubectl completion fish > ~/.config/fish/completions/kubectl.fish
