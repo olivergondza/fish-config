@@ -1,4 +1,5 @@
 function vpnon
-    nmcli connection up "Brno (BRQ)" --ask
+    set network "Brno (BRQ)"
+    nmcli connection up $network --ask
     and pass show rh/identity.corp.redhat.com/ogondza | kinit
 end
