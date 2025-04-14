@@ -12,3 +12,4 @@ set -x IDEA_JDK /usr/lib/jvm/java-17-openjdk/
 # Generate dynamic completions
 oc completion fish > ~/.config/fish/completions/oc.fish
 kubectl completion fish > ~/.config/fish/completions/kubectl.fish
+tkn completion fish > ~/.config/fish/completions/tkn.fish
