@@ -1,4 +1,4 @@
 function g
-	git  $argv;
+	git $argv;
 end
 complete -c g -w git

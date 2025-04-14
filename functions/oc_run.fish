@@ -16,7 +16,7 @@ spec:
     command:
     - 'sleep'
     args:
-    - '999999'
+    - 'inf'
   "
 
   oc apply -f (echo $yaml | psub)
