@@ -1,23 +1,6 @@
-function new-argocd-dev-cluster
-    if not grep CLI_NAME=argocd Makefile > /dev/null
-        echo "Not in an argo-cd repo"
-        return 1
-    end
-
-    if not systemctl is-active --quiet docker
-        systemctl start docker
-    end
-
-    set IP (getent hosts github.com | awk '{ print $1 }'| xargs ip route get | grep -oP "src \K[0-9\.]+")
-    k3d cluster delete argo-clstr
-    k3d cluster create argo-clstr --wait --k3s-arg '--disable=traefik@server:*' --api-port $IP:6550 -p 443:443@loadbalancer
-    set -x KUBECONFIG /tmp/k3d--argo-cd--argo-clstr--kubeconfig.yaml
-    k3d kubeconfig get argo-clstr > $KUBECONFIG
-
-    oc cluster-info
-
-    oc create namespace argocd
-    oc config set-context --current --namespace=argocd
+function argocd-local --description "Start local version of Argo CD"
+    __argocd-check-in-repo || return 1
+    __argocd-dev-cluster
 
     kubectl -n argocd apply -f manifests/install.yaml
 
@@ -56,4 +39,39 @@ function new-argocd-dev-cluster
 
     echo "Cleaning the env"
     k3d cluster delete argo-clstr
+end
+
+function argocd-e2e --description "Start E2E test env for Argo CD (make start-e2e-local)"
+    __argocd-check-in-repo || return 1
+    __argocd-dev-cluster
+
+    make start-e2e-local ARGOCD_E2E_REPOSERVER_PORT=8088 COVERAGE_ENABLED=true ARGOCD_FAKE_IN_CLUSTER=true ARGOCD_E2E_K3S=true
+
+    echo "Cleaning the env"
+    k3d cluster delete argo-clstr
+end
+
+function __argocd-check-in-repo
+    if not grep CLI_NAME=argocd Makefile > /dev/null
+        echo >&2 "Not in an argo-cd repo"
+        return 1
+    end
+    return 0
+end
+
+function __argocd-dev-cluster
+    if not systemctl is-active --quiet docker
+        systemctl start docker
+    end
+
+    set IP (getent hosts github.com | awk '{ print $1 }'| xargs ip route get | grep -oP "src \K[0-9\.]+")
+    k3d cluster delete argo-clstr
+    k3d cluster create argo-clstr --wait --k3s-arg '--disable=traefik@server:*' --api-port $IP:6550 -p 443:443@loadbalancer
+    set -x KUBECONFIG /tmp/k3d--argo-cd--argo-clstr--kubeconfig.yaml
+    k3d kubeconfig get argo-clstr > $KUBECONFIG
+
+    oc cluster-info
+
+    oc create namespace argocd
+    oc config set-context --current --namespace=argocd
 end
