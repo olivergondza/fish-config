@@ -2,21 +2,22 @@ function argocd-local --description "Start local version of Argo CD"
     __argocd-check-in-repo || return 1
     __argocd-dev-cluster
 
-    kubectl -n argocd apply -f manifests/install.yaml
+    oc -n argocd apply -f manifests/install.yaml
 
-    while not oc get secret argocd-initial-admin-secret
+    while not oc -n argocd get secret argocd-initial-admin-secret
         echo >&2 "Waiting for Argo CD initialized"
         sleep 5
     end
+    oc -n argocd get cm argocd-cm
 
     # Scaling down the workloads in the dummy deployment - we will only need the config and secrets
-    kubectl -n argocd scale statefulset/argocd-application-controller --replicas 0
-    kubectl -n argocd scale deployment/argocd-dex-server --replicas 0
-    kubectl -n argocd scale deployment/argocd-repo-server --replicas 0
-    kubectl -n argocd scale deployment/argocd-server --replicas 0
-    kubectl -n argocd scale deployment/argocd-redis --replicas 0
-    kubectl -n argocd scale deployment/argocd-applicationset-controller --replicas 0
-    kubectl -n argocd scale deployment/argocd-notifications-controller --replicas 0
+    oc -n argocd scale statefulset/argocd-application-controller --replicas 0
+    oc -n argocd scale deployment/argocd-dex-server --replicas 0
+    oc -n argocd scale deployment/argocd-repo-server --replicas 0
+    oc -n argocd scale deployment/argocd-server --replicas 0
+    oc -n argocd scale deployment/argocd-redis --replicas 0
+    oc -n argocd scale deployment/argocd-applicationset-controller --replicas 0
+    oc -n argocd scale deployment/argocd-notifications-controller --replicas 0
 
     set ARGO_PWD (oc -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d)
     echo "argocd PWD: "$ARGO_PWD
@@ -24,7 +25,7 @@ function argocd-local --description "Start local version of Argo CD"
     # The log in will only work after the `make start-local` progressed enough - run in background
     # Fish functions cannot run in background, so spawning child process
     env ARGO_PWD=$ARGO_PWD fish -c '
-        while not dist/argocd login localhost:8080 --username=admin --password=$ARGO_PWD
+        while not ./dist/argocd login localhost:8080 --username=admin --password=$ARGO_PWD
             sleep 5
         end
         echo "Argocd client logged in"
@@ -35,7 +36,22 @@ function argocd-local --description "Start local version of Argo CD"
     echo "Starting dev Argo CD"
     set -x ARGOCD_E2E_REPOSERVER_PORT 8088 # Prevent collision with the default - 8081
     set -x ARGOCD_APPLICATIONSET_CONTROLLER_ENABLE_PROGRESSIVE_SYNCS true # https://argo-cd.readthedocs.io/en/latest/operator-manual/applicationset/Progressive-Syncs/
-    make start-local ARGOCD_GPG_ENABLED=false
+
+    oc project argocd
+    make start-local \
+        ARGOCD_GPG_ENABLED=false \
+        ARGOCD_PROCFILE=(sed -e 's/^applicationset-controller/appset-ctrlr/' Procfile | psub) \
+        2>&1 \
+        | awk -F\| '{
+            /* Start from char(5) to ignore the space and color-resetting control codes */
+            if (substr($2, 5, 1) == "{") {
+              cmd = "echo \'" substr($2, 5) "\' | jq -Cc ."
+              cmd | getline highlighted;
+              close(cmd)
+              $0 = $1 "| " highlighted;
+            }
+            print;
+          }'
 
     echo "Cleaning the env"
     k3d cluster delete argo-clstr
@@ -45,7 +61,24 @@ function argocd-e2e --description "Start E2E test env for Argo CD (make start-e2
     __argocd-check-in-repo || return 1
     __argocd-dev-cluster
 
-    make start-e2e-local ARGOCD_E2E_REPOSERVER_PORT=8088 COVERAGE_ENABLED=true ARGOCD_FAKE_IN_CLUSTER=true ARGOCD_E2E_K3S=true
+    make start-e2e-local \
+        ARGOCD_E2E_REPOSERVER_PORT=8088 \
+        COVERAGE_ENABLED=true \
+        ARGOCD_FAKE_IN_CLUSTER=true \
+        ARGOCD_E2E_K3S=true \
+        ARGOCD_PROCFILE=(sed -e 's/^applicationset-controller/appset-ctrlr/' Procfile | psub) \
+        2>&1 \
+        | grep -v 'invalid session: token signature is invalid' \
+        | awk -F\| '{
+            /* Start from char(5) to ignore the space and color-resetting control codes */
+            if (substr($2, 5, 1) == "{") {
+              cmd = "echo \'" substr($2, 5) "\' | jq -Cc ."
+              cmd | getline highlighted;
+              close(cmd)
+              $0 = $1 "| " highlighted;
+            }
+            print;
+          }'
 
     echo "Cleaning the env"
     k3d cluster delete argo-clstr
@@ -74,4 +107,5 @@ function __argocd-dev-cluster
 
     oc create namespace argocd
     oc config set-context --current --namespace=argocd
+    oc project argocd
 end

@@ -10,3 +10,5 @@ set -x GOPATH /home/ogondza/.go
 oc completion fish > ~/.config/fish/completions/oc.fish
 kubectl completion fish > ~/.config/fish/completions/kubectl.fish
 tkn completion fish > ~/.config/fish/completions/tkn.fish
+
+source ~/.config/fish/functions/argocd-dev-funcs.fish
