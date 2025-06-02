@@ -1,9 +1,5 @@
 function fish_prompt --description 'Write out the prompt'
-    if nmcli connection show "Brno (BRQ)" | grep "GENERAL.STATE.*activated" > /dev/null
-        set VPN "VPN "
-    else
-        set VPN ""
-    end
+    set VPN (nmcli connection show --active | awk '{ if ($1 == "mullvad" || $1 == "RH-BRQ") { print $1 } }')
 
     printf '%s> ' $VPN
 end

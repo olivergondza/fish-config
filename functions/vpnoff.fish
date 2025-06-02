@@ -1,4 +1,4 @@
 function vpnoff
     kdestroy
-    nmcli connection down "Brno (BRQ)"
+    nmcli connection down "RH-BRQ"
 end
