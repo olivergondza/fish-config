@@ -9,6 +9,8 @@ metadata:
 labels:
   app: $POD_NAME
 spec:
+  securityContext:
+    allowPrivilegeEscalation: false
   containers:
   - name: $POD_NAME
     image: '$IMAGE'
@@ -17,6 +19,14 @@ spec:
     - 'sleep'
     args:
     - 'inf'
+    securityContext:
+      allowPrivilegeEscalation: false
+      runAsNonRoot: true
+      seccompProfile:
+        type: RuntimeDefault
+      capabilities:
+        drop:
+          - ALL
   "
 
   oc apply -f (echo $yaml | psub)
