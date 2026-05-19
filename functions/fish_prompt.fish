@@ -1,7 +1,11 @@
 function fish_prompt --description 'Write out the prompt'
-    set VPN (nmcli connection show --active | awk '{ if ($1 == "mullvad" || $1 == "RH-BRQ") { print $1 } }')
+    set VPN (nmcli --terse connection show --active | awk -F: '{ if ($3 == "vpn") { print $1 } }')
 
-    printf '%s> ' $VPN
+    if test -z $VPN
+        echo '$ '
+    else
+        printf '%s $ ' $VPN
+    end
 end
 
 function actual_fish_prompt --on-event fish_prompt --description 'Write out the prompt'
@@ -53,7 +57,7 @@ function actual_fish_prompt --on-event fish_prompt --description 'Write out the 
     end
     set -g __fish_git_prompt_show_informative_status true
     set -g __fish_git_prompt_char_stateseparator ' '
-    echo (fish_git_prompt&&echo ' '||echo ' $ ')
+    echo (fish_git_prompt)' '
 end
 
 function _is_background_completion --description "Determine whether a command is worth reporting its completion"
